@@ -1,4 +1,6 @@
-SELECT
+WITH cleaned_table AS
+(
+  SELECT
   name,
   --author
   SUBSTR(author,STRPOS(author,':')+1,(LENGTH(author)-STRPOS(author,':'))) AS cleaned_author,
@@ -28,4 +30,12 @@ SELECT
   IF(stars ='Not rated yet',0.0,CAST(SPLIT(REGEXP_REPLACE(stars, '[^0-9 ]', ''),' ')[offset(4)] AS FLOAT64)) AS reviews_count
 FROM
   `portfolio-370909.Audible.data`
-;
+)
+-- This group by is used to remove duplicate entries from the cleaned table
+SELECT
+  * EXCEPT(reviews_count),
+  MAX(reviews_count) AS cleaned_reviews_count
+FROM
+  cleaned_table
+GROUP BY
+  name, cleaned_author, cleaned_narrator, cleaned_time, releasedate, cleaned_language, cleaned_price, rating
